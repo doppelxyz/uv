@@ -48,7 +48,6 @@ fn lock_exclude_newer_relative() -> Result<()> {
     requires-python = ">=3.12"
 
     [options]
-    exclude-newer = "2024-04-10T00:00:00Z"
     exclude-newer-span = "P3W"
 
     [[package]]
@@ -116,7 +115,6 @@ fn lock_exclude_newer_relative() -> Result<()> {
     requires-python = ">=3.12"
 
     [options]
-    exclude-newer = "2024-04-17T00:00:00Z"
     exclude-newer-span = "P2W"
 
     [[package]]
@@ -165,7 +163,6 @@ fn lock_exclude_newer_relative() -> Result<()> {
     requires-python = ">=3.12"
 
     [options]
-    exclude-newer = "2024-05-18T00:00:00Z"
     exclude-newer-span = "P2W"
 
     [[package]]
@@ -371,7 +368,7 @@ fn lock_exclude_newer_package_relative() -> Result<()> {
     [options]
 
     [options.exclude-newer-package]
-    idna = { timestamp = "2024-04-10T00:00:00Z", span = "P3W" }
+    idna = "P3W"
 
     [[package]]
     name = "idna"
@@ -440,7 +437,7 @@ fn lock_exclude_newer_package_relative() -> Result<()> {
     [options]
 
     [options.exclude-newer-package]
-    idna = { timestamp = "2024-04-17T00:00:00Z", span = "P2W" }
+    idna = "P2W"
 
     [[package]]
     name = "idna"
@@ -490,7 +487,7 @@ fn lock_exclude_newer_package_relative() -> Result<()> {
     [options]
 
     [options.exclude-newer-package]
-    idna = { timestamp = "2024-05-18T00:00:00Z", span = "P2W" }
+    idna = "P2W"
 
     [[package]]
     name = "idna"
@@ -560,7 +557,6 @@ fn lock_exclude_newer_relative_pyproject() -> Result<()> {
     requires-python = ">=3.12"
 
     [options]
-    exclude-newer = "2024-04-10T00:00:00Z"
     exclude-newer-span = "P3W"
 
     [[package]]
@@ -633,7 +629,7 @@ fn lock_exclude_newer_package_relative_pyproject() -> Result<()> {
     [options]
 
     [options.exclude-newer-package]
-    idna = { timestamp = "2024-04-10T00:00:00Z", span = "P3W" }
+    idna = "P3W"
 
     [[package]]
     name = "idna"
@@ -714,11 +710,10 @@ fn lock_exclude_newer_relative_global_and_package() -> Result<()> {
     requires-python = ">=3.12"
 
     [options]
-    exclude-newer = "2024-04-10T00:00:00Z"
     exclude-newer-span = "P3W"
 
     [options.exclude-newer-package]
-    typing-extensions = { timestamp = "2024-04-17T00:00:00Z", span = "P2W" }
+    typing-extensions = "P2W"
 
     [[package]]
     name = "idna"
@@ -842,7 +837,7 @@ fn lock_exclude_newer_relative_global_and_package() -> Result<()> {
     exclude-newer = "2024-05-20T00:00:00Z"
 
     [options.exclude-newer-package]
-    typing-extensions = { timestamp = "2024-04-17T00:00:00Z", span = "P2W" }
+    typing-extensions = "P2W"
 
     [[package]]
     name = "idna"
@@ -907,7 +902,6 @@ fn lock_exclude_newer_relative_global_and_package() -> Result<()> {
     requires-python = ">=3.12"
 
     [options]
-    exclude-newer = "2024-04-10T00:00:00Z"
     exclude-newer-span = "P3W"
 
     [options.exclude-newer-package]

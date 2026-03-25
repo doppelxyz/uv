@@ -1149,12 +1149,15 @@ impl Lock {
             }
             let exclude_newer = ExcludeNewer::from(self.options.exclude_newer.clone());
             if !exclude_newer.is_empty() {
-                // Always serialize global exclude-newer as a string
+                // Serialize global exclude-newer
                 if let Some(global) = &exclude_newer.global {
-                    options_table.insert("exclude-newer", value(global.to_string()));
-                    // Serialize the original span if present
                     if let Some(span) = global.span() {
+                        // When a relative span is present, only write the span
+                        // to avoid merge conflicts from ever-changing timestamps
                         options_table.insert("exclude-newer-span", value(span.to_string()));
+                    } else {
+                        // Absolute timestamp: write as-is
+                        options_table.insert("exclude-newer", value(global.to_string()));
                     }
                 }
 
@@ -1165,14 +1168,8 @@ impl Lock {
                         match setting {
                             ExcludeNewerOverride::Enabled(exclude_newer_value) => {
                                 if let Some(span) = exclude_newer_value.span() {
-                                    // Serialize as inline table with timestamp and span
-                                    let mut inline = toml_edit::InlineTable::new();
-                                    inline.insert(
-                                        "timestamp",
-                                        exclude_newer_value.timestamp().to_string().into(),
-                                    );
-                                    inline.insert("span", span.to_string().into());
-                                    package_table.insert(name.as_ref(), Item::Value(inline.into()));
+                                    // When a relative span is present, only write the span
+                                    package_table.insert(name.as_ref(), value(span.to_string()));
                                 } else {
                                     // Serialize as simple string
                                     package_table.insert(
@@ -2339,10 +2336,13 @@ struct ExcludeNewerWire {
 
 impl From<ExcludeNewerWire> for ExcludeNewer {
     fn from(wire: ExcludeNewerWire) -> Self {
+        let global = match (wire.exclude_newer, wire.exclude_newer_span) {
+            (Some(timestamp), span) => Some(ExcludeNewerValue::new(timestamp, span)),
+            (None, Some(span)) => Some(ExcludeNewerValue::from_span(span)),
+            (None, None) => None,
+        };
         Self {
-            global: wire
-                .exclude_newer
-                .map(|timestamp| ExcludeNewerValue::new(timestamp, wire.exclude_newer_span)),
+            global,
             package: wire.exclude_newer_package,
         }
     }
