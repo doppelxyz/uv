@@ -1,4 +1,4 @@
-name: 'Setup Aikido Safe Chain (CI)'
+name: "Setup Aikido Safe Chain (CI)"
 description: >
   Installs a pinned safe-chain release after verifying the installer script SHA-256 (no curl-to-sh).
   Sets SAFE_CHAIN_MINIMUM_PACKAGE_AGE_HOURS so npm/PyPI installs are blocked when versions are too new.
@@ -6,17 +6,17 @@ description: >
 
 inputs:
   minimum_package_age_hours:
-    description: 'Minimum age in hours before a package version may be installed (npm and PyPI per safe-chain).'
+    description: "Minimum age in hours before a package version may be installed (npm and PyPI per safe-chain)."
     required: false
-    default: '72'
+    default: "72"
   safe_chain_version:
-    description: 'The version of safe-chain to install.'
+    description: "The version of safe-chain to install."
     required: false
-    default: '1.4.6'
+    default: "1.4.6"
   safe_chain_install_script_sha256:
-    description: 'The SHA-256 of the safe-chain install script.'
+    description: "The SHA-256 of the safe-chain install script."
     required: false
-    default: '1c49baa0d40285cf249364c5274ae2d0f11a5c65fb3aae23750dd06f91d9a356'
+    default: "1c49baa0d40285cf249364c5274ae2d0f11a5c65fb3aae23750dd06f91d9a356"
 
 runs:
   using: composite
