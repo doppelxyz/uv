@@ -32,7 +32,7 @@ permissions: {}
 jobs:
   sdist:
     name: sdist
-    runs-on: depot-ubuntu-24.04-4
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -90,7 +90,7 @@ jobs:
 
   macos-aarch64:
     name: aarch64-apple-darwin
-    runs-on: depot-macos-14
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -172,7 +172,7 @@ jobs:
 
   linux:
     name: ${{ matrix.target }}
-    runs-on: depot-ubuntu-latest-4
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -291,7 +291,7 @@ jobs:
 
   linux-arm:
     name: ${{ matrix.platform.target }}
-    runs-on: depot-ubuntu-24.04-8
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       matrix:
@@ -416,7 +416,7 @@ jobs:
 
   check-wheels:
     name: "Check wheel contents"
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     needs:
       - macos-aarch64
       - linux
