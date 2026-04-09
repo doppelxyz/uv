@@ -116,8 +116,12 @@ impl ExcludeNewerValue {
             };
         };
 
+        // Truncate to the start of the day (midnight UTC) to avoid lockfile churn
+        // from second/millisecond differences when recomputing from a relative span.
+        let truncated = cutoff.start_of_day().expect("start_of_day should not fail for valid dates");
+
         Self {
-            timestamp: cutoff.into(),
+            timestamp: truncated.into(),
             span: Some(span),
         }
     }
@@ -269,7 +273,11 @@ impl FromStr for ExcludeNewerValue {
                 let cutoff = now.checked_sub(span.abs()).map_err(|err| {
                     format!("Duration `{input}` is too large to subtract from current time: {err}")
                 })?;
-                return Ok(Self::new(cutoff.into(), Some(ExcludeNewerSpan(span))));
+                // Truncate to midnight UTC to avoid lockfile churn from time-of-day differences.
+                let truncated = cutoff.start_of_day().map_err(|err| {
+                    format!("Failed to truncate cutoff to start of day: {err}")
+                })?;
+                return Ok(Self::new(truncated.into(), Some(ExcludeNewerSpan(span))));
             }
             Err(err) => err,
         };
