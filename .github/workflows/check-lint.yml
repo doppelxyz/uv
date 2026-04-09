@@ -112,36 +112,6 @@ jobs:
       - name: "Clippy"
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
-  clippy-windows:
-    name: "clippy on windows"
-    timeout-minutes: 15
-    if: ${{ inputs.code-changed == 'true' || github.ref == 'refs/heads/main' }}
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Setup Dev Drive
-        run: ${{ github.workspace }}/.github/workflows/setup-dev-drive.ps1
-
-      # actions/checkout does not let us clone into anywhere outside ${{ github.workspace }}, so we have to copy the clone...
-      - name: Copy Git Repo to Dev Drive
-        run: |
-          Copy-Item -Path "${{ github.workspace }}" -Destination "$Env:UV_WORKSPACE" -Recurse
-
-      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: ${{ env.UV_WORKSPACE }}
-          save-if: ${{ inputs.save-rust-cache == 'true' }}
-
-      - name: "Install Rust toolchain"
-        run: rustup component add clippy
-
-      - name: "Clippy"
-        working-directory: ${{ env.UV_WORKSPACE }}
-        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
-
   shear:
     name: "cargo shear"
     timeout-minutes: 10
