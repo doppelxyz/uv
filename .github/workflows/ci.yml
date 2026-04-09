@@ -21,7 +21,3 @@ jobs:
     with:
       code-changed: "true"
       save-rust-cache: ${{ github.ref == 'refs/heads/main' }}
-
-  build-release-binaries:
-    uses: ./.github/workflows/build-release-binaries.yml
-    secrets: inherit
