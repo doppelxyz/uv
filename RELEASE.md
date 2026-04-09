@@ -58,16 +58,19 @@ git push origin main --tags
 
 ## Version scheme
 
-Format: `<upstream-version>-doppel` (e.g., `0.11.5-doppel`)
+Cargo (SemVer): `<upstream-version>-dev.0` (e.g., `0.11.5-dev.0`) Python (PEP 440):
+`<upstream-version>.dev0` (e.g., `0.11.5.dev0`)
 
-The `-doppel` suffix is a valid SemVer pre-release identifier. It makes `uv --version` clearly
-identify the fork. The script `scripts/doppel-set-version.sh` updates the 4 files that carry the
-version:
+The `-dev.0` suffix is valid in both SemVer and PEP 440 (maturin auto-converts). `uv --version`
+prints `uv 0.11.5-dev.0` to identify the fork. The script `scripts/doppel-set-version.sh` updates 6
+files:
 
 - `Cargo.toml` (workspace `uv-version` dependency)
 - `crates/uv/Cargo.toml`
 - `crates/uv-build/Cargo.toml`
 - `crates/uv-version/Cargo.toml`
+- `pyproject.toml`
+- `crates/uv-build/pyproject.toml`
 
 ## Using the fork in the monorepo
 
