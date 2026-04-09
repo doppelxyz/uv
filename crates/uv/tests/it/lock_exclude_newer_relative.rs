@@ -1319,3 +1319,121 @@ fn lock_exclude_newer_relative_values_pyproject() -> Result<()> {
 
     Ok(())
 }
+
+/// Verify that adding a new dependency to a project with a span-only lock file
+/// (no timestamp in uv.lock) still respects exclude-newer correctly.
+///
+/// Uses idna (releases: 3.6 on 2023-11-25, 3.7 on 2024-04-11)
+/// and typing-extensions (releases: 4.10.0 on 2024-02-25, 4.11.0 on 2024-04-01, 4.12.0 on 2024-06-07).
+#[test]
+fn lock_exclude_newer_relative_add_dependency() -> Result<()> {
+    let context = uv_test::test_context!("3.12");
+    let pyproject_toml = context.temp_dir.child("pyproject.toml");
+
+    // Start with just idna
+    pyproject_toml.write_str(
+        r#"
+        [project]
+        name = "project"
+        version = "0.1.0"
+        requires-python = ">=3.12"
+        dependencies = ["idna"]
+        "#,
+    )?;
+
+    // 3 weeks before 2024-05-01 is 2024-04-10
+    let current_timestamp = "2024-05-01T00:00:00Z";
+    uv_snapshot!(context.filters(), context
+        .lock()
+        .env_remove(EnvVars::UV_EXCLUDE_NEWER)
+        .env(EnvVars::UV_TEST_CURRENT_TIMESTAMP, current_timestamp)
+        .arg("--exclude-newer")
+        .arg("3 weeks"), @"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+
+    ----- stderr -----
+    Resolved 2 packages in [TIME]
+    ");
+
+    // Verify span-only lock (no timestamp)
+    let lock = context.read("uv.lock");
+    assert!(lock.contains("exclude-newer-span = \"P3W\""));
+    assert!(!lock.contains("exclude-newer = \""));
+
+    // Now add typing-extensions as a new dependency
+    pyproject_toml.write_str(
+        r#"
+        [project]
+        name = "project"
+        version = "0.1.0"
+        requires-python = ">=3.12"
+        dependencies = ["idna", "typing-extensions"]
+        "#,
+    )?;
+
+    // Re-lock at same time — exclude-newer cutoff is 2024-04-10
+    // typing-extensions 4.11.0 (released 2024-04-01) should be included (before cutoff)
+    // typing-extensions 4.12.0 (released 2024-06-07) should NOT be included (after cutoff)
+    uv_snapshot!(context.filters(), context
+        .lock()
+        .env_remove(EnvVars::UV_EXCLUDE_NEWER)
+        .env(EnvVars::UV_TEST_CURRENT_TIMESTAMP, current_timestamp)
+        .arg("--exclude-newer")
+        .arg("3 weeks"), @"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+
+    ----- stderr -----
+    Resolved 3 packages in [TIME]
+    Added typing-extensions v4.11.0
+    ");
+
+    let lock = context.read("uv.lock");
+
+    // Lock should still be span-only
+    assert!(lock.contains("exclude-newer-span = \"P3W\""));
+    assert!(!lock.contains("exclude-newer = \""));
+
+    // idna should still be 3.6 (3.7 released 2024-04-11, after cutoff)
+    assert!(lock.contains("name = \"idna\"\nversion = \"3.6\""));
+
+    // typing-extensions should NOT be 4.12.0 (released 2024-06-07, well after cutoff)
+    assert!(!lock.contains("version = \"4.12.0\""));
+
+    // typing-extensions should be present and resolved
+    assert!(lock.contains("name = \"typing-extensions\""));
+
+    // Now re-lock at a much later time to verify the span recomputes correctly.
+    // At 2024-07-01, 3 weeks back = 2024-06-10, which is AFTER typing-extensions 4.12.0 (2024-06-07)
+    // and after idna 3.7 (2024-04-11). So both should upgrade.
+    let later_timestamp = "2024-07-01T00:00:00Z";
+    uv_snapshot!(context.filters(), context
+        .lock()
+        .env_remove(EnvVars::UV_EXCLUDE_NEWER)
+        .env(EnvVars::UV_TEST_CURRENT_TIMESTAMP, later_timestamp)
+        .arg("--exclude-newer")
+        .arg("3 weeks")
+        .arg("--upgrade"), @"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+
+    ----- stderr -----
+    Resolved 3 packages in [TIME]
+    Updated idna v3.6 -> v3.7
+    Updated typing-extensions v4.11.0 -> v4.12.2
+    ");
+
+    let lock = context.read("uv.lock");
+
+    // idna should now be 3.7
+    assert!(lock.contains("name = \"idna\"\nversion = \"3.7\""));
+
+    // typing-extensions should now be 4.12.x
+    assert!(lock.contains("name = \"typing-extensions\"\nversion = \"4.12.2\""));
+
+    Ok(())
+}
